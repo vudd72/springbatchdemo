@@ -82,9 +82,17 @@ public class SpringBatchConfig {
                 .build();
     }
     @Bean
+    public Step transferData(JobRepository jobRepository, PlatformTransactionManager transactionManager){
+        return new StepBuilder("transferData", jobRepository)
+                .tasklet(new DBWritingTasklet(), transactionManager)
+                .build();
+
+    }
+    @Bean
     public Job job(JobRepository jobRepository, PlatformTransactionManager transactionManager){
         return new JobBuilder("csv-job",jobRepository)
                 .flow(step1(jobRepository, transactionManager))
+                .next(transferData(jobRepository,transactionManager))
                 .end().build();
 
     }
